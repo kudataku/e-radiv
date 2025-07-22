@@ -1,0 +1,7 @@
+streamlit
+openai
+fpdf
+google-generativeai
+pydub
+whisper
+python-dotenv
