@@ -1,27 +1,34 @@
-# ========== pages/1_Upload_Risalah.py ================
 import streamlit as st
-from utils.transkrip import transkrip_audio, simpan_ke_db
-from utils.auth import require_login
-import datetime
+from datetime import date
+from utils.transkrip import transkrip_audio
+from utils.database import simpan_ke_db
+from dotenv import load_dotenv
+import os
 
-require_login()
-if st.session_state.role not in ["notulis", "admin"]:
-    st.error("Anda tidak memiliki akses ke halaman ini.")
-    st.stop()
+# Load API key dari .env
+load_dotenv()
 
-st.title("🔊 Upload Audio Rapat")
+st.set_page_config(page_title="Upload Risalah", page_icon="📄")
+st.title("📄 Upload Risalah Rapat")
 
+# Form input
 with st.form("upload_form"):
-    tanggal = st.date_input("📅 Tanggal Rapat", value=datetime.date.today())
+    tanggal = st.date_input("📅 Tanggal Rapat", value=date.today())
     agenda = st.text_input("📝 Agenda Rapat")
     pimpinan = st.text_input("👤 Pimpinan Rapat")
-    uploaded_file = st.file_uploader("🎧 File Audio (.mp3/.wav)", type=["mp3", "wav"])
-    submitted = st.form_submit_button("🚀 Proses & Simpan")
+    uploaded_file = st.file_uploader("🎤 Upload file audio risalah (.mp3/.wav)", type=["mp3", "wav", "m4a"])
+
+    submitted = st.form_submit_button("🚀 Proses Transkrip")
 
     if submitted and uploaded_file:
-        with st.spinner("Sedang mentranskripsi audio..."):
-            hasil = transkrip_audio(uploaded_file)
-        simpan_ke_db(str(tanggal), agenda, pimpinan, uploaded_file.name, hasil, st.session_state.username)
-        st.success("✅ Transkrip berhasil disimpan!")
-        st.subheader("📝 Hasil Transkripsi:")
-        st.write(hasil)
+        with st.spinner("⏳ Sedang mentranskripsi audio..."):
+            try:
+                hasil = transkrip_audio(uploaded_file)
+                simpan_ke_db(str(tanggal), agenda, pimpinan, uploaded_file.name, hasil)
+                st.success("✅ Transkrip berhasil disimpan!")
+                st.subheader("📝 Hasil Transkripsi:")
+                st.write(hasil)
+            except Exception as e:
+                st.error(f"Terjadi error saat transkripsi: {e}")
+    elif submitted and not uploaded_file:
+        st.warning("⚠️ Harap upload file audio terlebih dahulu.")
