@@ -1,25 +1,20 @@
-# ================ utils/transkrip.py ===================
-import whisper
-import sqlite3
+import openai
 import tempfile
 import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load API Key dari .env
 
 def transkrip_audio(uploaded_file):
-    model = whisper.load_model("base")
+    # Simpan audio ke file sementara
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
 
-    result = model.transcribe(tmp_path, language="indonesian")
-    os.remove(tmp_path)
-    return result["text"]
+    # Transkrip audio dengan OpenAI API
+    with open(tmp_path, "rb") as audio_file:
+        response = openai.Audio.transcribe("whisper-1", audio_file)
 
-def simpan_ke_db(tanggal, agenda, pimpinan, filename, transcript, notulis):
-    conn = sqlite3.connect('database/risalah.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO risalah (tanggal, agenda, pimpinan, filename, transcript, notulis)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (tanggal, agenda, pimpinan, filename, transcript, notulis))
-    conn.commit()
-    conn.close()
+    os.remove(tmp_path)  # Hapus file sementara
+
+    return response["text"]
