@@ -2,8 +2,8 @@
 import streamlit as st
 from utils.auth import login
 
-st.set_page_config(page_title="E-Risalah DPRD", layout="wide")
+st.set_page_config(page_title="RADIV - DPRD Kab. Lebak", layout="wide")
 login()
 
-st.title("📄 E-Risalah DPRD Kabupaten Lebak")
-st.info("Gunakan sidebar untuk navigasi.")
+st.title("📄 RADIV - DPRD Kabupaten Lebak")
+st.info("(Risalah Autentik Digital Verifikasi) Mengabadikan Setiap Diskusi, Memajukan Tata Kelola Publik")
